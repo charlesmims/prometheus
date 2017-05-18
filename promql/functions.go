@@ -144,6 +144,21 @@ func funcIncrease(ev *evaluator, args Expressions) model.Value {
 	return extrapolatedRate(ev, args[0], true, false)
 }
 
+// === abolute_increase(matrix model.ValMatrix) Vector ===
+func funcAbsoluteIncrease(ev *evaluator, args Expressions) model.Value {
+	return aggrOverTime(ev, args, func(values []model.SamplePair) model.SampleValue {
+		count := 0
+		for _, v := range values {
+			if count > float64(v.Value) {
+				count += float64(v.Value)
+			} else {
+				count = float64(v.Value)
+			}
+		}
+		return model.SampleValue(count)
+	})
+}
+
 // === irate(node model.ValMatrix) Vector ===
 func funcIrate(ev *evaluator, args Expressions) model.Value {
 	return instantValue(ev, args[0], true)
@@ -1066,6 +1081,12 @@ var functions = map[string]*Function{
 		ArgTypes:   []model.ValueType{model.ValMatrix},
 		ReturnType: model.ValVector,
 		Call:       funcIncrease,
+	},
+	"absolute_increase": {
+		Name:       "absolute_increase",
+		ArgTypes:   []model.ValueType{model.ValMatrix},
+		ReturnType: model.ValVector,
+		Call:       funcAbsoluteIncrease,
 	},
 	"irate": {
 		Name:       "irate",
